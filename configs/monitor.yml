@@ -1,0 +1,32 @@
+monitors:
+
+  - id: eks_node_cpu_high
+    name: "EKS Node High CPU"
+    type: "metric alert"
+    query: "avg(last_5m):avg:kubernetes.cpu.usage.total{cluster:${cluster}} by {node} > 85"
+    severity: "critical"
+    thresholds:
+      critical: 85
+      warning: 75
+
+  - id: pod_restart_spike
+    name: "Pod Restart Spike"
+    type: "metric alert"
+    query: "sum(last_10m):increase(kubernetes.containers.restarts{cluster:${cluster}} by {pod}) > 5"
+    severity: "high"
+    thresholds:
+      critical: 5
+
+  - id: app_error_logs
+    name: "High Application Errors"
+    type: "log alert"
+    query: "logs(\"service:api status:error\").rollup(\"count\").last(\"5m\") > 20"
+    severity: "medium"
+    thresholds:
+      critical: 20
+
+  - id: argo_health
+    name: "ArgoCD App Degraded"
+    type: "query alert"
+    query: "avg(last_5m):avg:argocd.app.health.status{health_status:degraded,cluster:${cluster}} > 0"
+    severity: "high"
