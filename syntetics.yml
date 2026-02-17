@@ -1,0 +1,28 @@
+synthetics:
+
+  api_health:
+    name: "API Health Check"
+    type: "api"
+    subtype: "http"
+
+    request:
+      method: "GET"
+      url: "https://api.example.com/health"
+
+    locations:
+      - "aws:ap-south-1"
+
+    assertions:
+      - type: "statusCode"
+        operator: "is"
+        target: 200
+
+  homepage_browser:
+    name: "Homepage Browser Test"
+    type: "browser"
+
+    request:
+      url: "https://example.com"
+
+    locations:
+      - "aws:ap-south-1"
