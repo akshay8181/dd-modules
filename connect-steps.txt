@@ -35,3 +35,66 @@ aws iam create-role \
   --assume-role-policy-document file://trust-rolea.json
 
 
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "ListBucket",
+      "Effect": "Allow",
+      "Action": "s3:ListBucket",
+      "Resource": "arn:aws-us-gov:s3:::BUCKET_NAME"
+    },
+    {
+      "Sid": "ObjectRW",
+      "Effect": "Allow",
+      "Action": ["s3:GetObject","s3:PutObject","s3:DeleteObject"],
+      "Resource": "arn:aws-us-gov:s3:::BUCKET_NAME/*"
+    },
+    {
+      "Sid": "KmsUse",
+      "Effect": "Allow",
+      "Action": [
+        "kms:Decrypt",
+        "kms:Encrypt",
+        "kms:ReEncrypt*",
+        "kms:GenerateDataKey*",
+        "kms:DescribeKey"
+      ],
+      "Resource": "KMS_KEY_ARN"
+    }
+  ]
+}
+
+aws iam put-role-policy \
+  --role-name RoleA-S3KmsAccessFromAccountB \
+  --policy-name S3KmsAccess \
+  --policy-document file://rolea-permissions.json
+
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "AllowRoleAList",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws-us-gov:iam::ACCOUNT_A_ID:role/RoleA-S3KmsAccessFromAccountB"
+      },
+      "Action": "s3:ListBucket",
+      "Resource": "arn:aws-us-gov:s3:::BUCKET_NAME"
+    },
+    {
+      "Sid": "AllowRoleAObjects",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws-us-gov:iam::ACCOUNT_A_ID:role/RoleA-S3KmsAccessFromAccountB"
+      },
+      "Action": ["s3:GetObject","s3:PutObject","s3:DeleteObject"],
+      "Resource": "arn:aws-us-gov:s3:::BUCKET_NAME/*"
+    }
+  ]
+}
+
+aws s3api put-bucket-policy \
+  --bucket BUCKET_NAME \
+  --policy file://bucket-policy.json
+
