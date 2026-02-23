@@ -1,0 +1,115 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "TrustRoleB",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::ACCOUNT_B_ID:role/RoleB-SharedAccess"
+      },
+      "Action": "sts:AssumeRole"
+    }
+  ]
+}
+
+aws iam create-role \
+  --role-name RoleA-S3AccessFromAccountB \
+  --assume-role-policy-document file://trust-rolea.json
+
+
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "ListBucket",
+      "Effect": "Allow",
+      "Action": "s3:ListBucket",
+      "Resource": "arn:aws:s3:::YOUR_BUCKET"
+    },
+    {
+      "Sid": "ObjectRW",
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetObject",
+        "s3:PutObject",
+        "s3:DeleteObject"
+      ],
+      "Resource": "arn:aws:s3:::YOUR_BUCKET/*"
+    }
+  ]
+}
+
+aws iam put-role-policy \
+  --role-name RoleA-S3AccessFromAccountB \
+  --policy-name S3AccessToBucket \
+  --policy-document file://rolea-s3-policy.json
+
+
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "AllowRoleAList",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::ACCOUNT_A_ID:role/RoleA-S3AccessFromAccountB"
+      },
+      "Action": "s3:ListBucket",
+      "Resource": "arn:aws:s3:::YOUR_BUCKET"
+    },
+    {
+      "Sid": "AllowRoleAObjects",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::ACCOUNT_A_ID:role/RoleA-S3AccessFromAccountB"
+      },
+      "Action": [
+        "s3:GetObject",
+        "s3:PutObject",
+        "s3:DeleteObject"
+      ],
+      "Resource": "arn:aws:s3:::YOUR_BUCKET/*"
+    }
+  ]
+}
+
+aws s3api put-bucket-policy \
+  --bucket YOUR_BUCKET \
+  --policy file://bucket-policy.json
+
+{
+  "Sid": "AllowRoleAUseKmsKey",
+  "Effect": "Allow",
+  "Principal": {
+    "AWS": "arn:aws:iam::ACCOUNT_A_ID:role/RoleA-S3AccessFromAccountB"
+  },
+  "Action": [
+    "kms:Decrypt",
+    "kms:Encrypt",
+    "kms:ReEncrypt*",
+    "kms:GenerateDataKey*",
+    "kms:DescribeKey"
+  ],
+  "Resource": "*"
+}
+
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "AssumeRoleAInAccountA",
+      "Effect": "Allow",
+      "Action": "sts:AssumeRole",
+      "Resource": "arn:aws:iam::ACCOUNT_A_ID:role/RoleA-S3AccessFromAccountB"
+    }
+  ]
+}
+
+aws iam put-role-policy \
+  --role-name RoleB-SharedAccess \
+  --policy-name AssumeRoleA \
+  --policy-document file://roleb-assume.json
+
+aws sts assume-role \
+  --role-arn arn:aws:iam::ACCOUNT_A_ID:role/RoleA-S3AccessFromAccountB \
+  --role-session-name test
