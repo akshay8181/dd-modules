@@ -98,3 +98,50 @@ aws s3api put-bucket-policy \
   --bucket BUCKET_NAME \
   --policy file://bucket-policy.json
 
+
+aws kms get-key-policy \
+  --key-id KMS_KEY_ARN \
+  --policy-name default > current-kms-policy.json
+
+
+{
+  "Sid": "AllowRoleAUseKey",
+  "Effect": "Allow",
+  "Principal": {
+    "AWS": "arn:aws-us-gov:iam::ACCOUNT_A_ID:role/RoleA-S3KmsAccessFromAccountB"
+  },
+  "Action": [
+    "kms:Decrypt",
+    "kms:Encrypt",
+    "kms:ReEncrypt*",
+    "kms:GenerateDataKey*",
+    "kms:DescribeKey"
+  ],
+  "Resource": "*"
+}
+
+aws kms put-key-policy \
+  --key-id KMS_KEY_ARN \
+  --policy-name default \
+  --policy file://updated-kms-policy.json
+
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "AssumeRoleA",
+      "Effect": "Allow",
+      "Action": "sts:AssumeRole",
+      "Resource": "arn:aws-us-gov:iam::ACCOUNT_A_ID:role/RoleA-S3KmsAccessFromAccountB"
+    }
+  ]
+}
+
+aws iam put-role-policy \
+  --role-name RoleB-SharedAccess \
+  --policy-name AssumeRoleAForBucket \
+  --policy-document file://roleb-assume-rolea.json
+
+aws sts assume-role \
+  --role-arn arn:aws-us-gov:iam::ACCOUNT_A_ID:role/RoleA-S3KmsAccessFromAccountB \
+  --role-session-name test-s3
