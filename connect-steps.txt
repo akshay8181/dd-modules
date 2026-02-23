@@ -10,3 +10,6 @@
     }
   ]
 }
+aws iam create-role \
+  --role-name RoleB-SharedAccess \
+  --assume-role-policy-document file://trust-roleb.json
