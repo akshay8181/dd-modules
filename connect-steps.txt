@@ -2,14 +2,16 @@
   "Version": "2012-10-17",
   "Statement": [
     {
+      "Sid": "TrustAccountBRoot",
       "Effect": "Allow",
       "Principal": {
-        "AWS": "arn:aws:iam::ACCOUNT_B_ID:root"
+        "AWS": "arn:aws-us-gov:iam::ACCOUNT_B_ID:root"
       },
       "Action": "sts:AssumeRole"
     }
   ]
 }
+
 aws iam create-role \
   --role-name RoleB-SharedAccess \
   --assume-role-policy-document file://trust-roleb.json
