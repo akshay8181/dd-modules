@@ -21,24 +21,35 @@ aws iam create-role \
   "Version": "2012-10-17",
   "Statement": [
     {
-      "Sid": "ListBucket",
+      "Sid": "S3ListBucket",
       "Effect": "Allow",
       "Action": "s3:ListBucket",
-      "Resource": "arn:aws:s3:::YOUR_BUCKET"
+      "Resource": "arn:aws:s3:::BUCKET_NAME"
     },
     {
-      "Sid": "ObjectRW",
+      "Sid": "S3ObjectRW",
       "Effect": "Allow",
       "Action": [
         "s3:GetObject",
         "s3:PutObject",
         "s3:DeleteObject"
       ],
-      "Resource": "arn:aws:s3:::YOUR_BUCKET/*"
+      "Resource": "arn:aws:s3:::BUCKET_NAME/*"
+    },
+    {
+      "Sid": "AllowUseOfKmsKeyForS3Objects",
+      "Effect": "Allow",
+      "Action": [
+        "kms:Decrypt",
+        "kms:Encrypt",
+        "kms:ReEncrypt*",
+        "kms:GenerateDataKey*",
+        "kms:DescribeKey"
+      ],
+      "Resource": "KMS_KEY_ARN"
     }
   ]
 }
-
 aws iam put-role-policy \
   --role-name RoleA-S3AccessFromAccountB \
   --policy-name S3AccessToBucket \
