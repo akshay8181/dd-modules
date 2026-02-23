@@ -2,33 +2,11 @@
   "Version": "2012-10-17",
   "Statement": [
     {
-      "Sid": "TrustAccountBAdminsOrAutomation",
-      "Effect": "Allow",
-      "Principal": { "AWS": "arn:aws:iam::ACCOUNT_B_ID:root" },
-      "Action": "sts:AssumeRole"
-    }
-  ]
-}
-aws iam create-role \
-  --role-name RoleB-SharedAccess \
-  --assume-role-policy-document file://trust-roleb.json
-
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Sid": "TrustRoleBFromAccountB",
       "Effect": "Allow",
       "Principal": {
-        "AWS": "arn:aws:iam::ACCOUNT_B_ID:role/RoleB-SharedAccess"
+        "AWS": "arn:aws:iam::ACCOUNT_B_ID:root"
       },
       "Action": "sts:AssumeRole"
     }
   ]
 }
-
-
-
-aws iam create-role \
-  --role-name RoleA-S3KmsAccessFromAccountB \
-  --assume-role-policy-document file://trust-rolea.json
