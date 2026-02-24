@@ -1,14 +1,51 @@
 {
   "Version": "2012-10-17",
-  "Statement": [{
-    "Sid": "AllowAssumeRoleB",
-    "Effect": "Allow",
-    "Action": "sts:AssumeRole",
-    "Resource": "arn:aws-us-gov:iam::188:role/RoleB-SharedAccess"
-  }]
+  "Statement": [
+    {
+      "Sid": "AllowAccountBPrincipalList",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws-us-gov:iam::ACC_ID:user/AUTOMATION"
+      },
+      "Action": "s3:ListBucket",
+      "Resource": "arn:aws-us-gov:s3:::BUCKET"
+    },
+    {
+      "Sid": "AllowAccountBPrincipalObjects",
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws-us-gov:iam::ACC_ID:user/AUTOMATION"
+      },
+      "Action": [
+        "s3:GetObject",
+        "s3:PutObject",
+        "s3:DeleteObject"
+      ],
+      "Resource": "arn:aws-us-gov:s3:::BUCKET/*"
+    }
+  ]
+}
+aws s3api put-bucket-policy \
+  --bucket BUCKET \
+  --policy file://bucket-policy.json
+
+
+{
+  "Sid": "AllowAccountBPrincipalUseKey",
+  "Effect": "Allow",
+  "Principal": {
+    "AWS": "arn:aws-us-gov:iam::ACCC_ID:user/AUTOMATION"
+  },
+  "Action": [
+    "kms:Decrypt",
+    "kms:Encrypt",
+    "kms:ReEncrypt*",
+    "kms:GenerateDataKey*",
+    "kms:DescribeKey"
+  ],
+  "Resource": "*"
 }
 
-aws iam put-user-policy \
-  --user-name wg1-cpi-automation \
-  --policy-name AllowAssumeRoleB \
-  --policy-document file://user-assume-roleb.json
+
+
+
